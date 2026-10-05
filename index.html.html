@@ -1,0 +1,3079 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Aula Virtual - Diseño de Proyectos de Innovación Educativa">
+    <title>Aula Virtual</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            display: flex;
+            min-height: 100vh;
+            background-color: #f5f5f5;
+            overflow-x: hidden;
+        }
+
+        /* ============================================
+           OVERLAY PARA MENÚ MÓVIL Y CHAT
+           ============================================ */
+        .menu-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 45;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .menu-overlay.active {
+            display: block;
+            opacity: 1;
+        }
+
+        /* ============================================
+           BOTÓN HAMBURGUESA (solo móvil)
+           ============================================ */
+        .hamburger-btn {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            width: 44px;
+            height: 44px;
+            background: #2d2d2d;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            z-index: 60;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .hamburger-btn span {
+            display: block;
+            width: 22px;
+            height: 2px;
+            background: white;
+            border-radius: 2px;
+            transition: all 0.3s;
+        }
+
+        .hamburger-btn.active span:nth-child(1) {
+            transform: translateY(7px) rotate(45deg);
+        }
+
+        .hamburger-btn.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger-btn.active span:nth-child(3) {
+            transform: translateY(-7px) rotate(-45deg);
+        }
+
+        /* ============================================
+           SIDEBAR NEGRO PRINCIPAL
+           ============================================ */
+        .sidebar {
+            width: 220px;
+            background-color: #2d2d2d;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 50;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar.hidden {
+            display: none;
+        }
+
+        .sidebar-logo {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #444;
+        }
+
+        .sidebar-logo svg { width: 50px; height: 50px; }
+
+        .user-info {
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid #444;
+            font-size: 14px;
+        }
+
+        .user-info .user-icon {
+            width: 24px;
+            height: 24px;
+            background-color: #555;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .user-info .user-icon svg { width: 14px; height: 14px; fill: #ccc; }
+
+        .nav-menu { list-style: none; flex: 1; }
+
+        .nav-menu li { border-left: 4px solid transparent; }
+
+        .nav-menu li.active {
+            background-color: #3d3d3d;
+            border-left-color: #4A2FA0;
+        }
+
+        .nav-menu li a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 20px;
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background-color 0.2s;
+            cursor: pointer;
+        }
+
+        .nav-menu li a:hover { background-color: #3d3d3d; }
+
+        .nav-menu li.active a { font-weight: 600; }
+
+        .nav-menu li a svg {
+            width: 18px;
+            height: 18px;
+            fill: #cccccc;
+            flex-shrink: 0;
+        }
+
+        .sidebar-footer {
+            padding: 15px 20px;
+            font-size: 11px;
+            color: #999;
+            border-top: 1px solid #444;
+        }
+
+        .sidebar-footer a { color: #999; text-decoration: none; }
+
+        .sidebar-footer a:hover {
+            color: #ccc;
+            text-decoration: underline;
+        }
+
+        /* ============================================
+           CONTENIDO PRINCIPAL
+           ============================================ */
+        .main-content {
+            margin-left: 220px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            transition: margin-left 0.3s;
+        }
+
+        .main-content.full-width {
+            margin-left: 0;
+        }
+
+        .view { display: none; }
+
+        .view.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ============================================
+           VISTA AULA VIRTUAL
+           ============================================ */
+        .banner {
+            position: relative;
+            height: 180px;
+            background: linear-gradient(135deg, #e8e8e8 0%, #f0f0f0 100%);
+            overflow: hidden;
+            display: flex;
+            align-items: flex-end;
+        }
+
+        .banner-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1200&h=300&fit=crop');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.8;
+        }
+
+        .banner-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.7));
+        }
+
+        .banner-text {
+            position: relative;
+            z-index: 2;
+            padding: 20px 30px;
+            color: #ffffff;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .content-area {
+            padding: 30px;
+            flex: 1;
+        }
+
+        .content-title {
+            font-size: 24px;
+            font-weight: 400;
+            color: #333;
+            margin-bottom: 25px;
+        }
+
+        .info-card {
+            display: flex;
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .info-card-image {
+            width: 45%;
+            min-height: 280px;
+            background-image: url('https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=600&h=400&fit=crop');
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            padding-left: 20px;
+        }
+
+        .info-card-image .overlay-text {
+            background: linear-gradient(135deg, #ff006e 0%, #ff4081 50%, #ff006e 100%);
+            padding: 15px 25px;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 16px;
+            line-height: 1.4;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .info-card-image .overlay-text span {
+            display: block;
+            background-color: #ffeb3b;
+            color: #333;
+            padding: 8px 15px;
+            margin-top: 8px;
+            font-size: 14px;
+        }
+
+        .info-card-links {
+            width: 55%;
+            padding: 0;
+        }
+
+        .info-card-links ul { list-style: none; }
+
+        .info-card-links ul li { border-bottom: 1px solid #eee; }
+
+        .info-card-links ul li:last-child { border-bottom: none; }
+
+        .info-card-links ul li a {
+            display: block;
+            padding: 20px 25px;
+            color: #333;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        .info-card-links ul li a:hover {
+            background-color: #f8f8f8;
+            color: #4A2FA0;
+        }
+
+        /* ============================================
+           VISTA CURSOS
+           ============================================ */
+        .cursos-layout {
+            display: flex;
+            gap: 25px;
+            padding: 25px;
+        }
+
+        .cursos-main {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .cursos-header { margin-bottom: 20px; }
+
+        .cursos-header h1 {
+            font-size: 28px;
+            font-weight: 400;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 12px 15px;
+            margin-bottom: 20px;
+        }
+
+        .search-bar svg {
+            width: 20px;
+            height: 20px;
+            fill: #999;
+            margin-right: 10px;
+        }
+
+        .search-bar input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .filters-bar {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .filter-group label {
+            font-size: 12px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .filter-group select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            background-color: #ffffff;
+            color: #333;
+            cursor: pointer;
+            min-width: 180px;
+        }
+
+        .filter-group select:focus {
+            outline: none;
+            border-color: #4A2FA0;
+        }
+
+        .items-per-page {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: auto;
+        }
+
+        .items-per-page select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            background-color: #ffffff;
+        }
+
+        .items-per-page span {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .courses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .course-card {
+            background-color: #4A2FA0;
+            border: 2px solid #3A2480;
+            border-radius: 4px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+        }
+
+        .course-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 12px rgba(74, 47, 160, 0.3);
+        }
+
+        .course-card-image {
+            width: 100%;
+            height: 140px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .course-card-image::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(transparent, rgba(74, 47, 160, 0.5));
+        }
+
+        .course-card-content { padding: 15px; }
+
+        .course-card-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #FFFFE0;
+            margin-bottom: 10px;
+            line-height: 1.3;
+        }
+
+        .course-card-link {
+            display: inline-block;
+            font-size: 13px;
+            color: #5CB8FF;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .course-card-link:hover {
+            color: #8FD4FF;
+            text-decoration: underline;
+        }
+
+        .sidebar-right {
+            width: 300px;
+            flex-shrink: 0;
+        }
+
+        .reminder-card {
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .reminder-card h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .reminder-item {
+            display: flex;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .reminder-item:last-child { border-bottom: none; }
+
+        .reminder-date {
+            background-color: #e3f2fd;
+            padding: 8px 12px;
+            border-radius: 4px;
+            text-align: center;
+            min-width: 50px;
+        }
+
+        .reminder-date .month {
+            font-size: 11px;
+            color: #666;
+            text-transform: lowercase;
+        }
+
+        .reminder-date .day {
+            font-size: 18px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .reminder-content { flex: 1; }
+
+        .reminder-content .title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .reminder-content .subtitle {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .reminder-content .datetime {
+            font-size: 11px;
+            color: #999;
+        }
+
+        .resources-card {
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .resources-card h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .resources-card ul { list-style: none; }
+
+        .resources-card ul li { margin-bottom: 12px; }
+
+        .resources-card ul li a {
+            color: #4A2FA0;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+
+        .resources-card ul li a:hover {
+            color: #5CB8FF;
+            text-decoration: underline;
+        }
+
+        /* ============================================
+           VISTA CURSO DETALLE
+           ============================================ */
+        .curso-detalle-wrapper {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .curso-top-header {
+            background: #4A2FA0;
+            color: white;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .curso-top-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .curso-logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .curso-logo svg {
+            width: 40px;
+            height: 40px;
+        }
+
+        .curso-top-title {
+            font-size: 17px;
+            font-weight: 700;
+        }
+
+        .curso-top-breadcrumb {
+            font-size: 13px;
+            color: rgba(255,255,255,0.8);
+        }
+
+        .curso-top-breadcrumb span {
+            color: rgba(255,255,255,0.6);
+            margin: 0 6px;
+        }
+
+        .curso-top-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .top-btn {
+            padding: 7px 14px;
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.4);
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .top-btn:hover {
+            background: rgba(255,255,255,0.15);
+        }
+
+        .top-btn.primary {
+            background: #5CB8FF;
+            border-color: #5CB8FF;
+            color: #1a202c;
+            font-weight: 600;
+        }
+
+        .top-btn.primary:hover {
+            background: #4AA8EF;
+        }
+
+        .top-btn.small {
+            padding: 7px 12px;
+            font-weight: 700;
+        }
+
+        .curso-main-layout {
+            display: flex;
+            flex: 1;
+            background: #f3f4f6;
+        }
+
+        .curso-sidebar-left {
+            width: 240px;
+            background-color: #ffffff;
+            border-right: 1px solid #e5e7eb;
+            padding: 20px 0;
+            flex-shrink: 0;
+        }
+
+        .curso-nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 13px 22px;
+            color: #374151;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.2s;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+        }
+
+        .curso-nav-item:hover {
+            background-color: #f9fafb;
+        }
+
+        .curso-nav-item.active {
+            background-color: #FEF9C3;
+            color: #4A2FA0;
+            border: 1px solid #4A2FA0;
+            border-radius: 6px;
+            font-weight: 600;
+            margin: 0 10px;
+            padding: 12px 20px;
+        }
+
+        .curso-nav-item svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+            flex-shrink: 0;
+        }
+
+        .curso-center-content {
+            flex: 1;
+            padding: 28px 32px;
+            overflow-y: auto;
+        }
+
+        .curso-label {
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 6px;
+        }
+
+        .curso-title {
+            font-size: 30px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 24px;
+            letter-spacing: -0.5px;
+        }
+
+        .curso-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .curso-card {
+            background: #ffffff;
+            border: 2px solid #1a202c;
+            border-radius: 10px;
+            padding: 20px;
+            min-height: 280px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .curso-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+        }
+
+        .curso-card.orange::before { background: #F59E0B; }
+        .curso-card.green::before { background: #10B981; }
+        .curso-card.blue::before { background: #3B82F6; }
+
+        .curso-card-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #374151;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 8px;
+        }
+
+        .curso-card-subtitle {
+            font-size: 20px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 14px;
+        }
+
+        .curso-card-divider {
+            border: none;
+            border-top: 1px dashed #d1d5db;
+            margin: 12px 0;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px dashed #e5e7eb;
+        }
+
+        .task-item:last-child { border-bottom: none; }
+
+        .task-number {
+            width: 24px;
+            height: 24px;
+            background: #4A2FA0;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .task-info { flex: 1; }
+
+        .task-item-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 3px;
+        }
+
+        .task-item-date {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .resource-item {
+            padding: 10px 0;
+            border-bottom: 1px dashed #e5e7eb;
+        }
+
+        .resource-item:last-child { border-bottom: none; }
+
+        .resource-item-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 4px;
+        }
+
+        .resource-item-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #111827;
+            flex: 1;
+        }
+
+        .resource-item-meta {
+            font-size: 11px;
+            color: #6b7280;
+            margin-left: 34px;
+            line-height: 1.4;
+        }
+
+        .resource-item-count {
+            font-size: 12px;
+            color: #6b7280;
+            margin-left: 34px;
+        }
+
+        .curso-seccion {
+            background: #ffffff;
+            border: 2px solid #1a202c;
+            border-radius: 10px;
+            padding: 24px;
+        }
+
+        .curso-seccion-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .modulo-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 12px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .modulo-item:last-child { border-bottom: none; }
+
+        .modulo-number {
+            width: 44px;
+            height: 44px;
+            border: 2px dashed #9ca3af;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 700;
+            color: #6b7280;
+            flex-shrink: 0;
+        }
+
+        .modulo-info { flex: 1; min-width: 0; }
+
+        .modulo-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 3px;
+        }
+
+        .modulo-meta {
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+
+        .modulo-progress-bar {
+            width: 100%;
+            max-width: 200px;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .modulo-progress-fill {
+            height: 100%;
+            background: #10B981;
+            border-radius: 4px;
+        }
+
+        .modulo-status {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            border: 1px solid #d1d5db;
+            background: white;
+            color: #374151;
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+
+        .modulo-status.completed {
+            background: #10B981;
+            color: white;
+            border-color: #10B981;
+        }
+
+        .modulo-status.current {
+            background: #4A2FA0;
+            color: white;
+            border-color: #4A2FA0;
+        }
+
+        .modulo-status.pending {
+            background: #F59E0B;
+            color: white;
+            border-color: #F59E0B;
+        }
+
+        .curso-footer {
+            text-align: center;
+            padding: 16px;
+            font-size: 12px;
+            color: #9ca3af;
+            background: #f3f4f6;
+        }
+
+        /* ============================================
+           PANEL BIBLIOTOBOT
+           ============================================ */
+        .bibliobot-panel {
+            width: 380px;
+            background: #ffffff;
+            border-left: 1px solid #e5e7eb;
+            display: none;
+            flex-direction: column;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .bibliobot-panel.active {
+            display: flex;
+        }
+
+        .bibliobot-header {
+            background: #4A2FA0;
+            color: white;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+        }
+
+        .bibliobot-header-icon {
+            width: 42px;
+            height: 42px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .bibliobot-header-icon svg {
+            width: 22px;
+            height: 22px;
+            fill: #4A2FA0;
+        }
+
+        .bibliobot-header-info { flex: 1; }
+
+        .bibliobot-header-info h3 {
+            font-size: 14px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 2px;
+            line-height: 1.2;
+        }
+
+        .bibliobot-header-info p {
+            font-size: 11px;
+            color: rgba(255,255,255,0.9);
+        }
+
+        .bibliobot-sound-btn {
+            background: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            color: #4A2FA0;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .bibliobot-sound-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        /* NUEVO: Botón cerrar del Bibliobot */
+        .bibliobot-close-btn {
+            display: none;
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            margin-left: 8px;
+        }
+
+        .bibliobot-close-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .bibliobot-close-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        .bibliobot-chat {
+            flex: 1;
+            padding: 16px;
+            background: #FEF9C3;
+            overflow-y: auto;
+        }
+
+        .chat-message {
+            margin-bottom: 14px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .chat-message.user { display: flex; justify-content: flex-end; }
+
+        .chat-message.bot { display: flex; justify-content: flex-start; }
+
+        .chat-bubble {
+            max-width: 90%;
+            padding: 12px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .chat-message.bot .chat-bubble {
+            background: #FEF9C3;
+            color: #1a202c;
+            border: 1px solid #4A2FA0;
+            border-bottom-left-radius: 4px;
+        }
+
+        .chat-message.user .chat-bubble {
+            background: #4A2FA0;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .chat-bubble strong { color: #4A2FA0; }
+
+        .chat-message.user .chat-bubble strong { color: white; }
+
+        .chat-bubble ul, .chat-bubble ol {
+            margin: 8px 0;
+            padding-left: 20px;
+        }
+
+        .chat-bubble li { margin-bottom: 4px; }
+
+        .chat-bubble a {
+            color: #4A2FA0;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .chat-bubble a:hover { text-decoration: underline; }
+
+        .chat-dropdown-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #4A2FA0;
+            margin-bottom: 8px;
+        }
+
+        .chat-dropdown-label svg {
+            width: 16px;
+            height: 16px;
+            fill: #4A2FA0;
+        }
+
+        .chat-dropdown {
+            width: 100%;
+            padding: 10px 36px 10px 12px;
+            border: 2px solid #4A2FA0;
+            border-radius: 8px;
+            font-size: 13px;
+            font-family: 'Segoe UI', sans-serif;
+            background: white;
+            color: #1a202c;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%234A2FA0'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            background-size: 20px;
+            transition: all 0.2s;
+            outline: none;
+            margin-bottom: 12px;
+        }
+
+        .chat-dropdown:hover {
+            background-color: #F5F3FF;
+            border-color: #3A2480;
+        }
+
+        .chat-dropdown:focus {
+            border-color: #3A2480;
+            box-shadow: 0 0 0 3px rgba(74, 47, 160, 0.15);
+        }
+
+        .chat-task-card {
+            background: white;
+            border: 1px solid #CBD5E0;
+            border-left: 4px solid #F59E0B;
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .chat-task-card:hover {
+            background: #F0F4F8;
+            border-left-color: #4A2FA0;
+            transform: translateX(4px);
+        }
+
+        .chat-task-card-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 2px;
+        }
+
+        .chat-task-card-desc {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .chat-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .chat-action-btn {
+            padding: 7px 14px;
+            background: white;
+            border: 1px solid #1a202c;
+            color: #1a202c;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .chat-action-btn:hover {
+            background: #4A2FA0;
+            border-color: #4A2FA0;
+            color: white;
+        }
+
+        .chat-action-btn svg {
+            width: 14px;
+            height: 14px;
+            fill: currentColor;
+        }
+
+        .voice-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            background: #5CB8FF;
+            border-radius: 10px;
+            margin-top: 10px;
+            color: white;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .voice-wave {
+            display: flex;
+            gap: 3px;
+            align-items: center;
+            height: 20px;
+        }
+
+        .voice-bar {
+            width: 3px;
+            background: white;
+            border-radius: 2px;
+            animation: wave 1s ease-in-out infinite;
+        }
+
+        .voice-bar:nth-child(1) { height: 8px; animation-delay: 0s; }
+        .voice-bar:nth-child(2) { height: 15px; animation-delay: 0.1s; }
+        .voice-bar:nth-child(3) { height: 20px; animation-delay: 0.2s; }
+        .voice-bar:nth-child(4) { height: 12px; animation-delay: 0.3s; }
+        .voice-bar:nth-child(5) { height: 6px; animation-delay: 0.4s; }
+
+        @keyframes wave {
+            0%, 100% { transform: scaleY(0.5); }
+            50% { transform: scaleY(1); }
+        }
+
+        .chat-suggestions {
+            display: flex;
+            gap: 6px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .chat-suggestion-btn {
+            padding: 7px 12px;
+            background: white;
+            border: 1px solid #4A2FA0;
+            color: #4A2FA0;
+            border-radius: 18px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+        }
+
+        .chat-suggestion-btn:hover {
+            background: #4A2FA0;
+            color: white;
+        }
+
+        .bibliobot-footer {
+            padding: 12px 16px;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .chat-input-wrapper {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .chat-mic-btn {
+            width: 38px;
+            height: 38px;
+            background: #4A2FA0;
+            border: none;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .chat-mic-btn:hover {
+            background: #3A2480;
+            transform: scale(1.05);
+        }
+
+        .chat-mic-btn.listening {
+            background: #EF4444;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        .chat-mic-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid #CBD5E0;
+            border-radius: 20px;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s;
+            min-width: 0;
+        }
+
+        .chat-input:focus { border-color: #4A2FA0; }
+
+        .chat-send-btn {
+            width: 38px;
+            height: 38px;
+            background: white;
+            border: 1px solid #CBD5E0;
+            border-radius: 50%;
+            color: #4a5568;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .chat-send-btn:hover {
+            background: #4A2FA0;
+            border-color: #4A2FA0;
+            color: white;
+        }
+
+        .chat-send-btn svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+
+        /* Botón flotante Bibliobot */
+        .bot-fab {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #4A2FA0 0%, #6B4FCF 100%);
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(74, 47, 160, 0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 100;
+            animation: botBounce 3s ease-in-out infinite;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .bot-fab.visible { display: flex; }
+
+        @keyframes botBounce {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-8px) scale(1.05); }
+        }
+
+        .bot-fab:hover {
+            transform: scale(1.15) rotate(10deg);
+            box-shadow: 0 10px 30px rgba(74, 47, 160, 0.6);
+            animation: none;
+        }
+
+        .bot-fab svg {
+            width: 40px;
+            height: 40px;
+            fill: white;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+        }
+
+        .bot-fab-label {
+            position: absolute;
+            bottom: 80px;
+            right: 0;
+            background: linear-gradient(135deg, #4A2FA0 0%, #6B4FCF 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(74, 47, 160, 0.3);
+        }
+
+        .bot-fab-label::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            right: 25px;
+            width: 12px;
+            height: 12px;
+            background: #6B4FCF;
+            transform: rotate(45deg);
+        }
+
+        .bot-fab:hover .bot-fab-label {
+            opacity: 1;
+            transform: translateY(-5px);
+        }
+
+        .bot-fab::before,
+        .bot-fab::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: rgba(74, 47, 160, 0.3);
+            animation: botPulse 2s ease-out infinite;
+        }
+
+        .bot-fab::after { animation-delay: 1s; }
+
+        @keyframes botPulse {
+            0% { width: 100%; height: 100%; opacity: 1; }
+            100% { width: 180%; height: 180%; opacity: 0; }
+        }
+
+        /* ============================================
+           RESPONSIVE - TABLET (max-width: 1024px)
+           ============================================ */
+        @media (max-width: 1024px) {
+            .sidebar-right { display: none; }
+            .curso-cards-grid { grid-template-columns: 1fr; }
+            .bibliobot-panel { width: 320px; }
+        }
+
+        /* ============================================
+           RESPONSIVE - MÓVIL (max-width: 768px)
+           ============================================ */
+        @media (max-width: 768px) {
+            /* Mostrar botón hamburguesa */
+            .hamburger-btn {
+                display: flex;
+            }
+
+            /* Sidebar se convierte en menú deslizante */
+            .sidebar {
+                width: 260px;
+                transform: translateX(-100%);
+                box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            /* Contenido principal ocupa todo el ancho */
+            .main-content {
+                margin-left: 0;
+            }
+
+            /* Banner más compacto */
+            .banner {
+                height: 140px;
+            }
+
+            .banner-text {
+                font-size: 18px;
+                padding: 15px 20px;
+            }
+
+            /* Padding reducido en áreas de contenido */
+            .content-area {
+                padding: 20px 15px;
+            }
+
+            .content-title {
+                font-size: 20px;
+            }
+
+            /* Info card en columna */
+            .info-card {
+                flex-direction: column;
+            }
+
+            .info-card-image,
+            .info-card-links {
+                width: 100%;
+            }
+
+            .info-card-image {
+                min-height: 200px;
+            }
+
+            /* Layout de cursos */
+            .cursos-layout {
+                padding: 15px;
+                flex-direction: column;
+            }
+
+            .cursos-header h1 {
+                font-size: 22px;
+            }
+
+            .filters-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-group select,
+            .items-per-page select {
+                width: 100%;
+            }
+
+            .items-per-page {
+                margin-left: 0;
+            }
+
+            /* Grid de cursos en 1 columna */
+            .courses-grid {
+                grid-template-columns: 1fr;
+            }
+
+            /* Vista curso detalle */
+            .curso-top-header {
+                padding: 10px 15px;
+                padding-left: 70px;
+            }
+
+            .curso-top-left {
+                gap: 10px;
+            }
+
+            .curso-logo svg {
+                width: 32px;
+                height: 32px;
+            }
+
+            .curso-top-title {
+                font-size: 14px;
+            }
+
+            .curso-top-breadcrumb {
+                font-size: 11px;
+                width: 100%;
+                order: 3;
+            }
+
+            .curso-top-right {
+                gap: 5px;
+            }
+
+            .top-btn {
+                padding: 5px 10px;
+                font-size: 11px;
+            }
+
+            .top-btn.small {
+                display: none;
+            }
+
+            /* Sidebar del curso se oculta */
+            .curso-sidebar-left {
+                display: none;
+            }
+
+            /* Contenido central con padding reducido */
+            .curso-center-content {
+                padding: 20px 15px;
+            }
+
+            .curso-title {
+                font-size: 22px;
+                margin-bottom: 16px;
+            }
+
+            /* Tarjetas en 1 columna */
+            .curso-cards-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .curso-card {
+                min-height: auto;
+            }
+
+            .curso-card-subtitle {
+                font-size: 16px;
+            }
+
+            /* Módulos adaptados */
+            .curso-seccion {
+                padding: 16px;
+            }
+
+            .curso-seccion-title {
+                font-size: 18px;
+            }
+
+            .modulo-item {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .modulo-number {
+                width: 36px;
+                height: 36px;
+                font-size: 14px;
+            }
+
+            .modulo-title {
+                font-size: 14px;
+            }
+
+            .modulo-meta {
+                font-size: 11px;
+            }
+
+            .modulo-status {
+                font-size: 11px;
+                padding: 5px 10px;
+            }
+
+            /* ============================================
+               PANEL BIBLIOTOBOT EN MÓVIL - FULL SCREEN
+               ============================================ */
+            .bibliobot-panel {
+                position: fixed;
+                top: 0;
+                right: 0;
+                width: 100%;
+                max-width: 100%;
+                height: 100%;
+                z-index: 200;
+                border-left: none;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+            }
+
+            .bibliobot-panel.active {
+                transform: translateX(0);
+            }
+
+            /* Mostrar botón cerrar en móvil */
+            .bibliobot-close-btn {
+                display: flex;
+            }
+
+            /* Botón flotante más pequeño en móvil */
+            .bot-fab {
+                width: 60px;
+                height: 60px;
+                bottom: 20px;
+                right: 20px;
+            }
+
+            .bot-fab svg {
+                width: 32px;
+                height: 32px;
+            }
+
+            .bot-fab-label {
+                font-size: 11px;
+                padding: 6px 12px;
+            }
+
+            /* Footer */
+            .curso-footer {
+                font-size: 10px;
+                padding: 12px;
+            }
+        }
+
+        /* ============================================
+           RESPONSIVE - MÓVIL PEQUEÑO (max-width: 480px)
+           ============================================ */
+        @media (max-width: 480px) {
+            .curso-top-header {
+                padding-left: 65px;
+            }
+
+            .curso-top-title {
+                display: none;
+            }
+
+            .curso-top-breadcrumb {
+                font-size: 10px;
+            }
+
+            .curso-title {
+                font-size: 20px;
+            }
+
+            .chat-bubble {
+                font-size: 12px;
+                padding: 10px 12px;
+            }
+
+            .chat-action-btn {
+                font-size: 11px;
+                padding: 6px 10px;
+            }
+
+            .chat-suggestion-btn {
+                font-size: 10px;
+                padding: 6px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- OVERLAY PARA MENÚ MÓVIL Y CHAT -->
+    <div class="menu-overlay" id="menu-overlay" onclick="closeOverlays()"></div>
+
+    <!-- BOTÓN HAMBURGUESA -->
+    <button class="hamburger-btn" id="hamburger-btn" onclick="toggleMobileMenu()">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <!-- SIDEBAR NEGRO -->
+    <nav class="sidebar" id="main-sidebar">
+        <div class="sidebar-logo">
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 50 C20 75, 35 90, 50 90 C65 90, 80 75, 80 50 C75 60, 65 65, 55 65 C45 65, 35 60, 30 50 Z" fill="#E31E24"/>
+                <path d="M50 15 C45 30, 40 40, 40 55 C40 65, 45 70, 50 70 C55 70, 60 65, 60 55 C60 40, 55 30, 50 15 Z" fill="#E31E24"/>
+            </svg>
+        </div>
+
+        <div class="user-info">
+            <div class="user-icon">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 12c2.2 0 4-1.8 4-4s-1.8-4-4-4-4 1.8-4 4 1.8 4 4 4zm0 2c-2.7 0-8 1.3-8 4v2h16v-2c0-2.7-5.3-4-8-4z"/>
+                </svg>
+            </div>
+            <span>Gina Esther M...</span>
+        </div>
+
+        <ul class="nav-menu">
+            <li class="active" data-view="aula-virtual">
+                <a href="#">
+                    <svg viewBox="0 0 24 24"><path d="M12 3L2 12h3v8h6v-6h2v6h6v-8h3L12 3z"/></svg>
+                    <span>Página de la institución</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                    <span>Actividad</span>
+                </a>
+            </li>
+            <li data-view="cursos">
+                <a href="#">
+                    <svg viewBox="0 0 24 24"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/></svg>
+                    <span>Cursos</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM9 10H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z"/></svg>
+                    <span>Calendario</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                    <span>Mensajes</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                    <span>Calificaciones</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                    <span>Assist</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+                    <span>Herramientas</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="sidebar-footer">
+            <a href="#">Privacidad</a> • <a href="#">Condiciones</a> • <br><br>
+            <a href="#">Accesibilidad</a>
+        </div>
+    </nav>
+
+    <div class="main-content" id="main-content">
+        
+        <!-- VISTA: AULA VIRTUAL -->
+        <div class="view active" id="view-aula-virtual">
+            <div class="banner">
+                <div class="banner-image"></div>
+                <div class="banner-overlay"></div>
+                <div class="banner-text">AULA VIRTUAL</div>
+            </div>
+
+            <div class="content-area">
+                <h1 class="content-title">Aula Virtual</h1>
+
+                <div class="info-card">
+                    <div class="info-card-image">
+                        <div class="overlay-text">
+                            INFORMACIÓN SOBRE EL
+                            <span>AULA VIRTUAL</span>
+                        </div>
+                    </div>
+                    <div class="info-card-links">
+                        <ul>
+                            <li><a href="#">Portal de autogestión (preguntas frecuentes y tutoriales)</a></li>
+                            <li><a href="#">Página del Aula Virtual y videoconferencia</a></li>
+                            <li><a href="#">Videotutoriales del proveedor para estudiantes</a></li>
+                            <li><a href="#">Página de soporte del proveedor para estudiantes</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VISTA: CURSOS -->
+        <div class="view" id="view-cursos">
+            <div class="cursos-layout">
+                <div class="cursos-main">
+                    <div class="cursos-header">
+                        <h1>Cursos</h1>
+
+                        <div class="search-bar">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                            </svg>
+                            <input type="text" placeholder="Busque sus cursos" id="search-cursos">
+                        </div>
+
+                        <div class="filters-bar">
+                            <div class="filter-group">
+                                <label>Períodos</label>
+                                <select>
+                                    <option>Todos los períodos</option>
+                                    <option>2026-2</option>
+                                    <option>2026-1</option>
+                                    <option>2025-2</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label>Filtros</label>
+                                <select>
+                                    <option>Todos los cursos</option>
+                                    <option>En progreso</option>
+                                    <option>Completados</option>
+                                </select>
+                            </div>
+                            <div class="items-per-page">
+                                <select>
+                                    <option>25</option>
+                                    <option>50</option>
+                                    <option>100</option>
+                                </select>
+                                <span>elementos por página</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="courses-grid" id="courses-grid"></div>
+                </div>
+
+                <div class="sidebar-right">
+                    <div class="reminder-card">
+                        <h3>Recordatorio de tareas</h3>
+                        <div class="reminder-item">
+                            <div class="reminder-date">
+                                <div class="month">oct.</div>
+                                <div class="day">9</div>
+                            </div>
+                            <div class="reminder-content">
+                                <div class="title">M8|Trabajo Final (TF): "Diseño de programa corto de intervención"</div>
+                                <div class="subtitle">Tarea · Counselling: Acompañamiento ...</div>
+                                <div class="datetime">vie. · 9/10/26 · 19:00</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="resources-card">
+                        <h3>Recursos académicos:</h3>
+                        <ul>
+                            <li><a href="https://biblioteca.upc.edu.pe/az.php" target="_blank" class="resource-link">Portal de Recursos de Investigación</a></li>
+                            <li><a href="https://biblioteca.upc.edu.pe/portal/presentacion" target="_blank" class="resource-link">Portal de la Biblioteca</a></li>
+                            <li><a href="https://catalogo.upc.edu.pe/discovery/search?vid=51UPC_INST:51UPC_INST" target="_blank" class="resource-link">Catálogo en línea</a></li>
+                            <li><a href="https://repositorioacademico.upc.edu.pe/home" target="_blank" class="resource-link">Repositorio Académico - UPC</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VISTA: CURSO DETALLE -->
+        <div class="view" id="view-curso-diseno">
+            <div class="curso-detalle-wrapper">
+                <header class="curso-top-header">
+                    <div class="curso-top-left">
+                        <div class="curso-logo">
+                            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 50 C20 75, 35 90, 50 90 C65 90, 80 75, 80 50 C75 60, 65 65, 55 65 C45 65, 35 60, 30 50 Z" fill="#E31E24"/>
+                                <path d="M50 15 C45 30, 40 40, 40 55 C40 65, 45 70, 50 70 C55 70, 60 65, 60 55 C60 40, 55 30, 50 15 Z" fill="#E31E24"/>
+                            </svg>
+                        </div>
+                        <div class="curso-top-title">Aula virtual</div>
+                        <div class="curso-top-breadcrumb">
+                            Mis cursos <span>/</span> Diseño de Proyectos de Innovación Educativa
+                        </div>
+                    </div>
+                    <div class="curso-top-right">
+                        <button class="top-btn small">A+</button>
+                        <button class="top-btn">Alto contraste</button>
+                        <button class="top-btn primary"> Asistente · Alt+B</button>
+                        <button class="top-btn">[EST]</button>
+                    </div>
+                </header>
+
+                <div class="curso-main-layout">
+                    <aside class="curso-sidebar-left">
+                        <a href="#" class="curso-nav-item" onclick="switchView('aula-virtual'); return false;">
+                            <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+                            <span>Inicio del curso</span>
+                        </a>
+                        <a href="#" class="curso-nav-item">
+                            <svg viewBox="0 0 24 24"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/></svg>
+                            <span>Contenidos</span>
+                        </a>
+                        <a href="#" class="curso-nav-item">
+                            <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                            <span>Tareas</span>
+                        </a>
+                        <a href="#" class="curso-nav-item active" onclick="switchView('cursos'); return false;">
+                            <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                            <span>Cursos</span>
+                        </a>
+                        <a href="#" class="curso-nav-item">
+                            <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+                            <span>Foros</span>
+                        </a>
+                        <a href="#" class="curso-nav-item">
+                            <svg viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
+                            <span>Calificaciones</span>
+                        </a>
+                    </aside>
+
+                    <main class="curso-center-content">
+                        <div class="curso-label">Curso</div>
+                        <h1 class="curso-title">Diseño de Proyectos de Innovación Educativa</h1>
+
+                        <div class="curso-cards-grid">
+                            <div class="curso-card orange" id="card-entregables">
+                                <div class="curso-card-label">Próximos Entregables</div>
+                                <div class="curso-card-subtitle" id="entregables-count">3 pendientes</div>
+                                <hr class="curso-card-divider">
+                                <div id="entregables-list">
+                                    <div class="task-item">
+                                        <div class="task-number">1</div>
+                                        <div class="task-info">
+                                            <div class="task-item-title">Informe de diagnóstico del proyecto</div>
+                                            <div class="task-item-date">Entrega: 10 oct 2026</div>
+                                        </div>
+                                    </div>
+                                    <div class="task-item">
+                                        <div class="task-number">2</div>
+                                        <div class="task-info">
+                                            <div class="task-item-title">Propuesta de intervención (borrador)</div>
+                                            <div class="task-item-date">Entrega: 24 oct 2026</div>
+                                        </div>
+                                    </div>
+                                    <div class="task-item">
+                                        <div class="task-number">3</div>
+                                        <div class="task-info">
+                                            <div class="task-item-title">Foro: avances del proyecto</div>
+                                            <div class="task-item-date">Entrega: 31 oct 2026</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="curso-card green" id="card-bibliografia">
+                                <div class="curso-card-label">e-Bibliografía del Curso</div>
+                                <div class="curso-card-subtitle" id="bibliografia-title">Recursos para cada tarea</div>
+                                <hr class="curso-card-divider">
+                                <div id="bibliografia-list">
+                                    <div class="resource-item">
+                                        <div class="resource-item-header">
+                                            <div class="task-number">1</div>
+                                            <div class="resource-item-title">Informe de diagnóstico del proyecto</div>
+                                        </div>
+                                        <div class="resource-item-meta">Libro · Diseño y gestión de proyectos educativos · R. Paredes</div>
+                                        <div class="resource-item-meta">Artículo · Diagnóstico de necesidades educativas · L. Vargas</div>
+                                    </div>
+                                    <div class="resource-item">
+                                        <div class="resource-item-header">
+                                            <div class="task-number">2</div>
+                                            <div class="resource-item-title">Propuesta de intervención (borrador)</div>
+                                        </div>
+                                        <div class="resource-item-meta">Libro · Evaluación de proyectos sociales · M. Quispe</div>
+                                    </div>
+                                    <div class="resource-item">
+                                        <div class="resource-item-header">
+                                            <div class="task-number">3</div>
+                                            <div class="resource-item-title">Foro: avances del proyecto</div>
+                                        </div>
+                                        <div class="resource-item-meta">Artículo · Innovación en la escuela del siglo XXI · L. Vargas</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="curso-card blue" id="card-recursos">
+                                <div class="curso-card-label">Otros Recursos de la Biblioteca</div>
+                                <div class="curso-card-subtitle" id="recursos-title">Recursos para cada tarea</div>
+                                <hr class="curso-card-divider">
+                                <div id="recursos-list">
+                                    <div class="resource-item">
+                                        <div class="resource-item-header">
+                                            <div class="task-number">1</div>
+                                            <div class="resource-item-title">Informe de diagnóstico del proyecto</div>
+                                        </div>
+                                        <div class="resource-item-count"><strong>Catálogo en línea:</strong> 4 libros</div>
+                                        <div class="resource-item-count"><strong>Recursos de investigación:</strong> 2 bases de datos</div>
+                                        <div class="resource-item-count"><strong>Repositorio:</strong> 3 tesis</div>
+                                    </div>
+                                    <div class="resource-item">
+                                        <div class="resource-item-header">
+                                            <div class="task-number">2</div>
+                                            <div class="resource-item-title">Propuesta de intervención (borrador)</div>
+                                        </div>
+                                        <div class="resource-item-count"><strong>Catálogo en línea:</strong> 3 libros</div>
+                                        <div class="resource-item-count"><strong>Recursos de investigación:</strong> 3 bases de datos</div>
+                                        <div class="resource-item-count"><strong>Repositorio:</strong> 2 tesis</div>
+                                    </div>
+                                    <div class="resource-item">
+                                        <div class="resource-item-header">
+                                            <div class="task-number">3</div>
+                                            <div class="resource-item-title">Foro: avances del proyecto</div>
+                                        </div>
+                                        <div class="resource-item-count"><strong>Catálogo en línea:</strong> 2 libros</div>
+                                        <div class="resource-item-count"><strong>Recursos de investigación:</strong> 1 base de datos</div>
+                                        <div class="resource-item-count"><strong>Repositorio:</strong> 1 tesis</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="curso-seccion">
+                            <h2 class="curso-seccion-title">Módulos</h2>
+
+                            <div class="modulo-item">
+                                <div class="modulo-number">1</div>
+                                <div class="modulo-info">
+                                    <div class="modulo-title">Introducción al diseño de proyectos</div>
+                                    <div class="modulo-meta">Semanas 1 y 2 · 4 recursos · 1 tarea</div>
+                                </div>
+                                <div class="modulo-status completed">Completado</div>
+                            </div>
+
+                            <div class="modulo-item">
+                                <div class="modulo-number">2</div>
+                                <div class="modulo-info">
+                                    <div class="modulo-title">Diagnóstico y necesidades educativas</div>
+                                    <div class="modulo-meta">Semanas 3 y 4 · 6 recursos · 2 tareas</div>
+                                </div>
+                                <div class="modulo-status completed">Completado</div>
+                            </div>
+
+                            <div class="modulo-item">
+                                <div class="modulo-number">3</div>
+                                <div class="modulo-info">
+                                    <div class="modulo-title">Formulación del problema y objetivos</div>
+                                    <div class="modulo-meta">Semana 5 · 5 recursos · 1 tarea</div>
+                                    <div class="modulo-progress-bar">
+                                        <div class="modulo-progress-fill" style="width: 40%;"></div>
+                                    </div>
+                                </div>
+                                <div class="modulo-status current">En curso</div>
+                            </div>
+
+                            <div class="modulo-item">
+                                <div class="modulo-number">4</div>
+                                <div class="modulo-info">
+                                    <div class="modulo-title">Diseño de la intervención</div>
+                                    <div class="modulo-meta">Semanas 6 y 7 · 7 recursos · 1 tarea</div>
+                                </div>
+                                <div class="modulo-status pending">Pendiente</div>
+                            </div>
+
+                            <div class="modulo-item">
+                                <div class="modulo-number">5</div>
+                                <div class="modulo-info">
+                                    <div class="modulo-title">Evaluación e indicadores de impacto</div>
+                                    <div class="modulo-meta">Semanas 8 y 9 · 5 recursos · 1 tarea</div>
+                                </div>
+                                <div class="modulo-status pending">Pendiente</div>
+                            </div>
+                        </div>
+                    </main>
+
+                    <aside class="bibliobot-panel" id="bibliobot-panel">
+                        <div class="bibliobot-header">
+                            <div class="bibliobot-header-icon">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
+                                    <circle cx="9" cy="10" r="1.2"/>
+                                    <circle cx="12" cy="10" r="1.2"/>
+                                    <circle cx="15" cy="10" r="1.2"/>
+                                </svg>
+                            </div>
+                            <div class="bibliobot-header-info">
+                                <h3>Bibliobot, tu Asistente de Búsqueda Académica</h3>
+                                <p>Voz activada · responde hablando</p>
+                            </div>
+                            <button class="bibliobot-sound-btn" title="Activar/desactivar voz" onclick="toggleVoice()">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                                </svg>
+                            </button>
+                            <!-- NUEVO: Botón cerrar Bibliobot -->
+                            <button class="bibliobot-close-btn" id="bibliobot-close-btn" title="Cerrar Bibliobot" onclick="closeBibliobot()">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div class="bibliobot-chat" id="bibliobot-chat"></div>
+
+                        <div class="bibliobot-footer">
+                            <div class="chat-input-wrapper">
+                                <button class="chat-mic-btn" id="mic-btn" title="Hablar" onclick="toggleVoiceRecognition()">
+                                    <svg viewBox="0 0 24 24">
+                                        <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+                                        <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+                                    </svg>
+                                </button>
+                                <input type="text" class="chat-input" id="chat-input" placeholder="Escribe tu pregunta...">
+                                <button class="chat-send-btn" onclick="sendMessage()">
+                                    <svg viewBox="0 0 24 24">
+                                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+
+                <div class="curso-footer">
+                    Datos ficticios de ejemplo para el prototipo
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- BOTÓN FLOTANTE BIBLIOTOBOT -->
+    <div class="bot-fab" id="bot-fab" title="Bibliobot" onclick="toggleChat()">
+        <div class="bot-fab-label">¡Hola!, Soy Bibliobot</div>
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+            <rect x="16" y="20" width="32" height="28" rx="6" fill="white"/>
+            <circle cx="24" cy="32" r="4" fill="#4A2FA0"/>
+            <circle cx="40" cy="32" r="4" fill="#4A2FA0"/>
+            <circle cx="25" cy="31" r="1.5" fill="white"/>
+            <circle cx="41" cy="31" r="1.5" fill="white"/>
+            <path d="M 26 40 Q 32 44 38 40" stroke="#4A2FA0" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <polygon points="32,10 12,18 32,26 52,18" fill="#FFD700"/>
+            <rect x="30" y="18" width="4" height="8" fill="#FFD700"/>
+            <circle cx="32" cy="26" r="2" fill="#FFD700"/>
+            <line x1="32" y1="10" x2="32" y2="6" stroke="white" stroke-width="2"/>
+            <circle cx="32" cy="5" r="2" fill="#5CB8FF"/>
+            <rect x="10" y="28" width="6" height="12" rx="3" fill="white"/>
+            <rect x="48" y="28" width="6" height="12" rx="3" fill="white"/>
+        </svg>
+    </div>
+
+    <script>
+        const courses = [
+            { title: 'Counselling', image: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=400&h=300&fit=crop' },
+            { title: 'Diseño de Proyectos de Innovación Educativa', image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=300&fit=crop', special: true },
+            { title: 'Tecnologías de la información', image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=300&fit=crop' },
+            { title: 'Liderazgo', image: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=400&h=300&fit=crop' },
+            { title: 'Gestión de recursos humanos', image: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=400&h=300&fit=crop' },
+            { title: 'Marketing digital', image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=300&fit=crop' },
+            { title: 'Innovación y emprendimiento', image: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=400&h=300&fit=crop' },
+            { title: 'Ética profesional', image: 'https://images.unsplash.com/photo-1589998059171-988d887df646?w=400&h=300&fit=crop' },
+            { title: 'Comunicación efectiva', image: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=400&h=300&fit=crop' },
+            { title: 'Desarrollo organizacional', image: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=400&h=300&fit=crop' },
+            { title: 'Investigación aplicada', image: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=400&h=300&fit=crop' },
+            { title: 'Psicología organizacional', image: 'https://images.unsplash.com/photo-1573497620053-ea5300f94f21?w=400&h=300&fit=crop' }
+        ];
+
+        function renderCourses(coursesToRender) {
+            const grid = document.getElementById('courses-grid');
+            grid.innerHTML = '';
+            
+            coursesToRender.forEach(course => {
+                const card = document.createElement('div');
+                card.className = 'course-card';
+                card.innerHTML = `
+                    <div class="course-card-image" style="background-image: url('${course.image}')"></div>
+                    <div class="course-card-content">
+                        <div class="course-card-title">${course.title}</div>
+                        <a href="#" class="course-card-link">e-Bibliografía →</a>
+                    </div>
+                `;
+                card.addEventListener('click', function(e) {
+                    if (!e.target.classList.contains('course-card-link')) {
+                        e.preventDefault();
+                        if (course.special) {
+                            switchView('curso-diseno');
+                        } else {
+                            alert(`Aquí se cargará la página del curso: "${course.title}"`);
+                        }
+                    }
+                });
+                grid.appendChild(card);
+            });
+        }
+
+        renderCourses(courses);
+
+        document.getElementById('search-cursos').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const filtered = courses.filter(course => 
+                course.title.toLowerCase().includes(searchTerm)
+            );
+            renderCourses(filtered);
+        });
+
+        // Función para cerrar todos los overlays (menú móvil y chat)
+        function closeOverlays() {
+            const sidebar = document.getElementById('main-sidebar');
+            const hamburger = document.getElementById('hamburger-btn');
+            const overlay = document.getElementById('menu-overlay');
+            const panel = document.getElementById('bibliobot-panel');
+            
+            sidebar.classList.remove('open');
+            hamburger.classList.remove('active');
+            overlay.classList.remove('active');
+            panel.classList.remove('active');
+        }
+
+        // NUEVA: Función específica para cerrar el Bibliobot
+        function closeBibliobot() {
+            const panel = document.getElementById('bibliobot-panel');
+            panel.classList.remove('active');
+        }
+
+        // Función para menú móvil
+        function toggleMobileMenu() {
+            const sidebar = document.getElementById('main-sidebar');
+            const hamburger = document.getElementById('hamburger-btn');
+            const overlay = document.getElementById('menu-overlay');
+            
+            sidebar.classList.toggle('open');
+            hamburger.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
+        function switchView(viewName) {
+            document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
+            document.getElementById(`view-${viewName}`).classList.add('active');
+            
+            const sidebar = document.getElementById('main-sidebar');
+            const mainContent = document.getElementById('main-content');
+            const panel = document.getElementById('bibliobot-panel');
+            const botFab = document.getElementById('bot-fab');
+            const overlay = document.getElementById('menu-overlay');
+            const hamburger = document.getElementById('hamburger-btn');
+            
+            // Cerrar overlays
+            sidebar.classList.remove('open');
+            hamburger.classList.remove('active');
+            overlay.classList.remove('active');
+            panel.classList.remove('active');
+            
+            if (viewName === 'curso-diseno') {
+                sidebar.classList.add('hidden');
+                mainContent.classList.add('full-width');
+                botFab.classList.add('visible');
+            } else {
+                sidebar.classList.remove('hidden');
+                mainContent.classList.remove('full-width');
+                botFab.classList.remove('visible');
+            }
+            
+            document.querySelectorAll('.nav-menu li').forEach(li => li.classList.remove('active'));
+            if (viewName === 'aula-virtual') {
+                document.querySelector('[data-view="aula-virtual"]').classList.add('active');
+            } else if (viewName === 'cursos' || viewName === 'curso-diseno') {
+                document.querySelector('[data-view="cursos"]').classList.add('active');
+            }
+        }
+
+        document.querySelectorAll('.nav-menu li').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                document.querySelectorAll('.nav-menu li').forEach(li => li.classList.remove('active'));
+                this.classList.add('active');
+                
+                const viewName = this.getAttribute('data-view');
+                if (viewName) {
+                    switchView(viewName);
+                }
+            });
+        });
+
+        // ============================================
+        // FUNCIONALIDAD DEL BIBLIOTOBOT
+        // ============================================
+        let voiceEnabled = true;
+        let recognition = null;
+        let isListening = false;
+        let chatInitialized = false;
+
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.lang = 'es-ES';
+            recognition.continuous = false;
+            recognition.interimResults = false;
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('chat-input').value = transcript;
+                stopListening();
+                setTimeout(() => sendMessage(), 500);
+            };
+
+            recognition.onerror = function(event) {
+                console.error('Error de reconocimiento de voz:', event.error);
+                stopListening();
+                addBotMessage('No pude entender lo que dijiste. Por favor, intenta escribir tu consulta.');
+            };
+
+            recognition.onend = function() {
+                stopListening();
+            };
+        }
+
+        function toggleVoiceRecognition() {
+            if (!recognition) {
+                addBotMessage('Tu navegador no soporta reconocimiento de voz. Por favor, usa Chrome, Edge o Safari.');
+                return;
+            }
+
+            if (isListening) {
+                recognition.stop();
+            } else {
+                recognition.start();
+                startListening();
+            }
+        }
+
+        function startListening() {
+            isListening = true;
+            const micBtn = document.getElementById('mic-btn');
+            micBtn.classList.add('listening');
+            
+            const chatBody = document.getElementById('bibliobot-chat');
+            const indicator = document.createElement('div');
+            indicator.className = 'voice-indicator';
+            indicator.id = 'voice-indicator';
+            indicator.innerHTML = `
+                <div class="voice-wave">
+                    <div class="voice-bar"></div>
+                    <div class="voice-bar"></div>
+                    <div class="voice-bar"></div>
+                    <div class="voice-bar"></div>
+                    <div class="voice-bar"></div>
+                </div>
+                <span>Escuchando... di tu pregunta</span>
+            `;
+            chatBody.appendChild(indicator);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        function stopListening() {
+            isListening = false;
+            const micBtn = document.getElementById('mic-btn');
+            micBtn.classList.remove('listening');
+            
+            const indicator = document.getElementById('voice-indicator');
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+
+        function toggleChat() {
+            const panel = document.getElementById('bibliobot-panel');
+            const overlay = document.getElementById('menu-overlay');
+            
+            panel.classList.toggle('active');
+            
+            // En móvil, mostrar overlay al abrir el chat
+            if (window.innerWidth <= 768) {
+                if (panel.classList.contains('active')) {
+                    overlay.classList.add('active');
+                } else {
+                    overlay.classList.remove('active');
+                }
+            }
+            
+            if (panel.classList.contains('active') && !chatInitialized) {
+                initChat();
+                chatInitialized = true;
+            }
+        }
+
+        function initChat() {
+            const chatBody = document.getElementById('bibliobot-chat');
+            chatBody.innerHTML = '';
+            
+            addBotMessage('Hola, soy Bibliobot, tu asistente de búsqueda. Pregúntame escribiendo, hablando o elige alguna de estas opciones.');
+            
+            const dropdownLabel = document.createElement('div');
+            dropdownLabel.className = 'chat-dropdown-label';
+            dropdownLabel.innerHTML = `
+                <svg viewBox="0 0 24 24">
+                    <path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/>
+                </svg>
+                <span>Elige la opción que deseas:</span>
+            `;
+            chatBody.appendChild(dropdownLabel);
+            
+            const select = document.createElement('select');
+            select.className = 'chat-dropdown';
+            select.id = 'chat-dropdown';
+            select.onchange = function() { handleDropdownChange(this.value); };
+            
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = 'Selecciona una opción...';
+            defaultOption.disabled = true;
+            defaultOption.selected = true;
+            select.appendChild(defaultOption);
+            
+            const options = [
+                { value: 'tareas', label: '📋 ¿Qué tareas tengo pendientes?' },
+                { value: 'donde-buscar', label: '🔍 ¿Dónde busco información para mi tarea?' },
+                { value: 'recursos-silabo', label: '📚 ¿Qué recursos recomendó mi profesor en el sílabo?' },
+                { value: 'libros', label: '📖 ¿Dónde puedo buscar libros?' },
+                { value: 'articulos', label: '📄 ¿Dónde puedo buscar artículos académicos?' },
+                { value: 'tesis', label: '📝 ¿Dónde puedo buscar tesis?' },
+                { value: 'base-datos', label: '💻 ¿Cómo busco en una base de datos?' },
+                { value: 'citar', label: '📝 ¿Cómo cito una fuente?' },
+                { value: 'otra', label: '💬 Otra consulta' }
+            ];
+            
+            options.forEach(option => {
+                const opt = document.createElement('option');
+                opt.value = option.value;
+                opt.textContent = option.label;
+                select.appendChild(opt);
+            });
+            
+            chatBody.appendChild(select);
+        }
+
+        function toggleVoice() {
+            voiceEnabled = !voiceEnabled;
+        }
+
+        function handleDropdownChange(value) {
+            if (value) {
+                const dropdown = document.getElementById('chat-dropdown');
+                const selectedOption = dropdown.options[dropdown.selectedIndex].text;
+                
+                addUserMessage(selectedOption.replace(/^[^\s]+\s/, ''));
+                processUserInput(value);
+                
+                dropdown.value = '';
+            }
+        }
+
+        function addUserMessage(text) {
+            const chatBody = document.getElementById('bibliobot-chat');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'chat-message user';
+            messageDiv.innerHTML = `<div class="chat-bubble">${text}</div>`;
+            chatBody.appendChild(messageDiv);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        function addBotMessage(text, html = false) {
+            const chatBody = document.getElementById('bibliobot-chat');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'chat-message bot';
+            messageDiv.innerHTML = `<div class="chat-bubble">${html ? text : text}</div>`;
+            chatBody.appendChild(messageDiv);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        function addActionButtons(actions) {
+            const chatBody = document.getElementById('bibliobot-chat');
+            const lastMessage = chatBody.lastElementChild;
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'chat-actions';
+            actions.forEach(action => {
+                const btn = document.createElement('button');
+                btn.className = 'chat-action-btn';
+                btn.innerHTML = action.html;
+                btn.onclick = action.onClick;
+                actionsDiv.appendChild(btn);
+            });
+            lastMessage.appendChild(actionsDiv);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        function addSuggestions(suggestions) {
+            const chatBody = document.getElementById('bibliobot-chat');
+            const suggestionsDiv = document.createElement('div');
+            suggestionsDiv.className = 'chat-suggestions';
+            suggestions.forEach(text => {
+                const btn = document.createElement('button');
+                btn.className = 'chat-suggestion-btn';
+                btn.textContent = text;
+                btn.onclick = () => handleSuggestion(text);
+                suggestionsDiv.appendChild(btn);
+            });
+            chatBody.appendChild(suggestionsDiv);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        function handleSuggestion(text) {
+            addUserMessage(text);
+            processUserInput(text);
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            if (message) {
+                addUserMessage(message);
+                input.value = '';
+                setTimeout(() => processUserInput(message), 500);
+            }
+        }
+
+        function detectIntent(message) {
+            const lowerMsg = message.toLowerCase();
+            
+            const hasLibro = lowerMsg.includes('libro') || lowerMsg.includes('libros');
+            const hasArticulo = lowerMsg.includes('artículo') || lowerMsg.includes('articulos') || lowerMsg.includes('artículos') || lowerMsg.includes('revista') || lowerMsg.includes('revistas');
+            const hasTesis = lowerMsg.includes('tesis') || lowerMsg.includes('trabajo de investigación') || lowerMsg.includes('trabajos');
+            const hasTarea = lowerMsg.includes('tarea') || lowerMsg.includes('pendiente') || lowerMsg.includes('entregable') || lowerMsg.includes('entrega');
+            const hasSilabo = lowerMsg.includes('sílabo') || lowerMsg.includes('silabo') || lowerMsg.includes('profesor recomend');
+            const hasCitar = lowerMsg.includes('citar') || lowerMsg.includes('cita') || lowerMsg.includes('referencia') || lowerMsg.includes('apa');
+            const hasBaseDatos = lowerMsg.includes('base de datos') || lowerMsg.includes('buscar en');
+            const hasDondeBusco = lowerMsg.includes('dónde busco') || lowerMsg.includes('donde busco') || lowerMsg.includes('buscar información');
+            
+            let tema = '';
+            const temaMatch = lowerMsg.match(/sobre\s+([^.]+)/i) || lowerMsg.match(/de\s+([^.]+)/i) || lowerMsg.match(/para\s+([^.]+)/i);
+            if (temaMatch) {
+                tema = temaMatch[1].trim();
+            }
+            
+            if (hasTarea) return { intent: 'tareas', tema: '' };
+            if (hasDondeBusco) return { intent: 'donde-buscar', tema: tema || 'tu tarea' };
+            if (hasSilabo) return { intent: 'recursos-silabo', tema: '' };
+            if (hasCitar) return { intent: 'citar', tema: '' };
+            if (hasBaseDatos) return { intent: 'base-datos', tema: tema };
+            
+            if (hasLibro) {
+                if (!tema && lowerMsg.split(' ').length <= 3) {
+                    return { intent: 'libros-sin-tema', tema: '' };
+                }
+                return { intent: 'libros', tema: tema || 'metodología de la investigación' };
+            }
+            
+            if (hasArticulo) {
+                if (!tema && lowerMsg.split(' ').length <= 3) {
+                    return { intent: 'articulos-sin-tema', tema: '' };
+                }
+                return { intent: 'articulos', tema: tema || 'inteligencia artificial en educación' };
+            }
+            
+            if (hasTesis) {
+                if (!tema && lowerMsg.split(' ').length <= 3) {
+                    return { intent: 'tesis-sin-tema', tema: '' };
+                }
+                return { intent: 'tesis', tema: tema || 'acompañamiento educativo' };
+            }
+            
+            if (tema && (lowerMsg.includes('información') || lowerMsg.includes('buscar') || lowerMsg.includes('necesito'))) {
+                return { intent: 'tipo-no-claro', tema: tema };
+            }
+            
+            if (tema) {
+                return { intent: 'tipo-no-claro', tema: tema };
+            }
+            
+            return { intent: 'otra', tema: '' };
+        }
+
+        function processUserInput(message) {
+            const { intent, tema } = detectIntent(message);
+            
+            switch(intent) {
+                case 'tareas': handleTareas(); break;
+                case 'donde-buscar': handleDondeBuscar(tema); break;
+                case 'recursos-silabo': handleRecursosSilabo(); break;
+                case 'libros': handleLibros(tema, true); break;
+                case 'libros-sin-tema': handleLibrosSinTema(); break;
+                case 'articulos': handleArticulos(tema, true); break;
+                case 'articulos-sin-tema': handleArticulosSinTema(); break;
+                case 'tesis': handleTesis(tema, true); break;
+                case 'tesis-sin-tema': handleTesisSinTema(); break;
+                case 'base-datos': handleBaseDatos(tema); break;
+                case 'citar': handleCitar(); break;
+                case 'tipo-no-claro': handleTipoNoClaro(tema); break;
+                default: handleOtra();
+            }
+        }
+
+        function handleTareas() {
+            setTimeout(() => {
+                const response = `
+                    <strong>Estas son tus tareas pendientes:</strong>
+                    <div class="chat-task-card" onclick="handleTaskClick('Informe de diagnóstico del proyecto', '10 oct 2026')">
+                        <div class="chat-task-card-title">Diseño de Proyectos de Innovación Educativa</div>
+                        <div class="chat-task-card-desc">Informe de diagnóstico del proyecto · Entrega: 10 oct</div>
+                    </div>
+                    <div class="chat-task-card" onclick="handleTaskClick('Matriz de consistencia', '15 oct 2026')">
+                        <div class="chat-task-card-title">Metodología de la Investigación</div>
+                        <div class="chat-task-card-desc">Matriz de consistencia · Entrega: 15 oct</div>
+                    </div>
+                    <div class="chat-task-card" onclick="handleTaskClick('Propuesta de intervención', '24 oct 2026')">
+                        <div class="chat-task-card-title">Diseño de Proyectos</div>
+                        <div class="chat-task-card-desc">Propuesta de intervención (borrador) · Entrega: 24 oct</div>
+                    </div>
+                    Haz clic en una tarea para saber dónde buscar información.
+                `;
+                addBotMessage(response, true);
+                addActionButtons([
+                    { html: '<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg> Escuchar', onClick: () => speakMessage('Tienes 3 tareas pendientes') }
+                ]);
+                
+                updateEntregablesCard([
+                    { title: 'Informe de diagnóstico del proyecto', date: 'Entrega: 10 oct 2026' },
+                    { title: 'Matriz de consistencia', date: 'Entrega: 15 oct 2026' },
+                    { title: 'Propuesta de intervención', date: 'Entrega: 24 oct 2026' }
+                ]);
+            }, 600);
+        }
+
+        function handleTaskClick(taskName, taskDate) {
+            addUserMessage(taskName);
+            handleDondeBuscar(taskName);
+        }
+
+        function handleDondeBuscar(tema) {
+            setTimeout(() => {
+                const response = `
+                    Para tu tarea <strong>«${tema}»</strong>, te recomiendo buscar en este orden:
+                    <ol>
+                        <li><strong>e-Bibliografía:</strong> los recursos que tu profesor indicó en el sílabo. <a href="https://biblioteca.upc.edu.pe/az.php" target="_blank">[Abrir]</a></li>
+                        <li><strong>Catálogo en línea:</strong> libros de la biblioteca sobre ${tema}. <a href="https://catalogo.upc.edu.pe/discovery/search?vid=51UPC_INST:51UPC_INST" target="_blank">[Abrir]</a></li>
+                        <li><strong>Recursos de investigación:</strong> artículos y bases de datos que tu universidad suscribe. <a href="https://biblioteca.upc.edu.pe/az.php" target="_blank">[Abrir]</a></li>
+                        <li><strong>Repositorio:</strong> tesis y trabajos de investigación de la universidad. <a href="https://repositorioacademico.upc.edu.pe/home" target="_blank">[Abrir]</a></li>
+                        <li><strong>Como complemento:</strong> recursos de acceso abierto de fuentes confiables. <a href="https://biblioteca.upc.edu.pe/az.php" target="_blank">[Abrir]</a></li>
+                    </ol>
+                    Empieza por el 1, porque es lo que tu profesor espera que uses. ¿Quieres que te sugiera palabras clave para tu tema?
+                `;
+                addBotMessage(response, true);
+                addActionButtons([
+                    { html: '<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg> Escuchar', onClick: () => speakMessage(`Te recomiendo buscar información sobre ${tema} en este orden`) },
+                    { html: '💡 Sugerir palabras clave', onClick: () => handleSuggestion('Sugerir palabras clave') }
+                ]);
+                
+                updateBibliografiaCard([{
+                    title: tema,
+                    items: ['Libro · Diseño y gestión de proyectos educativos · R. Paredes', 'Artículo · Diagnóstico de necesidades educativas · L. Vargas']
+                }]);
+                
+                updateRecursosCard([{
+                    title: tema,
+                    items: ['<strong>Catálogo en línea:</strong> 4 libros', '<strong>Recursos de investigación:</strong> 2 bases de datos', '<strong>Repositorio:</strong> 3 tesis']
+                }]);
+            }, 600);
+        }
+
+        function handleRecursosSilabo() {
+            setTimeout(() => {
+                const response = `
+                    En el sílabo de <strong>Diseño de Proyectos de Innovación Educativa</strong>, tu profesor recomendó:
+                    <ul>
+                        <li>Libro: "Innovación educativa: conceptos y prácticas" · Semana 3</li>
+                        <li>Artículo: "Metodologías activas en el aula" · Semana 5</li>
+                        <li>Video: "Design Thinking en educación" · Semana 7</li>
+                    </ul>
+                    Los encuentras en la <strong>e-Bibliografía</strong>. <a href="https://biblioteca.upc.edu.pe/az.php" target="_blank">[Abrir e-Bibliografía]</a><br><br>
+                    Si necesitas más fuentes para complementar, puedo buscarte en el catálogo, los recursos de investigación, el repositorio y el acceso abierto. ¿Seguimos?
+                `;
+                addBotMessage(response, true);
+                addActionButtons([
+                    { html: '<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg> Escuchar', onClick: () => speakMessage('Tu profesor recomendó 3 recursos en el sílabo') },
+                    { html: '📚 Ir a la e-Bibliografía', onClick: () => window.open('https://biblioteca.upc.edu.pe/az.php', '_blank') },
+                    { html: '🔍 Buscar más fuentes', onClick: () => handleSuggestion('Buscar más fuentes') }
+                ]);
+            }, 600);
+        }
+
+        function handleLibros(tema, conResultados) {
+            setTimeout(() => {
+                const response = `
+                    Para buscar libros sobre <strong>${tema}</strong>, mira en este orden:
+                    <ol type="a">
+                        <li><strong>e-Bibliografía:</strong> los libros que tu profesor recomendó en el sílabo. <a href="https://biblioteca.upc.edu.pe/az.php" target="_blank">[Abrir]</a></li>
+                        <li><strong>Catálogo en línea:</strong> libros físicos y electrónicos de la biblioteca. <a href="https://catalogo.upc.edu.pe/discovery/search?vid=51UPC_INST:51UPC_INST" target="_blank">[Abrir]</a></li>
+                        <li><strong>Recursos de investigación:</strong> libros electrónicos de las plataformas que tu universidad suscribe. <a href="https://biblioteca.upc.edu.pe/az.php" target="_blank">[Abrir]</a></li>
+                        <li><strong>Repositorio:</strong> tesis y trabajos que citan libros útiles para tu tema. <a href="https://repositorioacademico.upc.edu.pe/home" target="_blank">[Abrir]</a></li>
+                        <li><strong>Como complemento:</strong> libros de acceso abierto de fuentes confiables. <a href="https://biblioteca.upc.edu.pe/az.php" target="_blank">[Abrir]</a></li>
+                    </ol>
+                    Si me dices tu tema, te muestro los libros que encontré.
+                `;
+                addBotMessage(response, true);
+                addActionButtons([
+                    { html: '<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg> Escuchar', onClick: () => speakMessage(`Para buscar libros sobre ${tema}, mira en este orden`) },
+                    { html: '📖 Mostrar títulos', onClick: () => handleSuggestion('Mostrar títulos de libros') }
+                ]);
+                
+                updateBibliografiaCard([{
+                    title: `Libros sobre ${tema}`,
+                    items: ['Libro · Diseño y gestión de proyectos educativos · R. Paredes', 'Libro · Evaluación de proyectos sociales · M. Quispe']
+                }]);
+            }, 600);
+        }
+
+        function handleLibrosSinTema() {
+            setTimeout(() => {
+                addBotMessage('Con gusto te ayudo a buscar un libro. ¿De qué tema o de qué curso lo necesitas?');
+                addActionButtons([
+                    { html: '🎤 Hablar', onClick: () => toggleVoiceRecognition() },
+                    { html: '✏️ Escribir', onClick: () => document.getElementById('chat-input').focus() }
+                ]);
+            }, 600);
+        }
+
+        function handleArticulos(tema, conResultados) {
+            setTimeout(() => {
+                const response = `
+                    Para buscar artículos sobre <strong>${tema}</strong>, te sugiero este orden:
+                    <ol type="a">
+                        <li><strong>e-Bibliografía:</strong> los artículos que tu profesor indicó en el sílabo. <a href="https://biblioteca.upc.edu.pe/az.php" target="_blank">[Abrir]</a></li>
+                        <li><strong>Catálogo en línea:</strong> revistas y publicaciones que tiene la biblioteca. <a href="https://catalogo.upc.edu.pe/discovery/search?vid=51UPC_INST:51UPC_INST" target="_blank">[Abrir]</a></li>
+                        <li><strong>Recursos de investigación:</strong> bases de datos con artículos académicos. <a href="https://biblioteca.upc.edu.pe/az.php" target="_blank">[Abrir]</a></li>
+                        <li><strong>Repositorio:</strong> artículos y tesis de tu universidad. <a href="https://repositorioacademico.upc.edu.pe/home" target="_blank">[Abrir]</a></li>
+                        <li><strong>Como complemento:</strong> artículos de acceso abierto de fuentes confiables. <a href="https://biblioteca.upc.edu.pe/az.php" target="_blank">[Abrir]</a></li>
+                    </ol>
+                    Dime tu tema, escríbelo como hablas, y yo me encargo de buscar.
+                `;
+                addBotMessage(response, true);
+                addActionButtons([
+                    { html: '<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg> Escuchar', onClick: () => speakMessage(`Para buscar artículos sobre ${tema}, te sugiero este orden`) },
+                    { html: '📄 Mostrar artículos', onClick: () => handleSuggestion('Mostrar artículos') }
+                ]);
+                
+                updateBibliografiaCard([{
+                    title: `Artículos sobre ${tema}`,
+                    items: ['Artículo · Inteligencia artificial en el aula · J. Pérez', 'Artículo · Machine learning educativo · A. García']
+                }]);
+                
+                updateRecursosCard([{
+                    title: `Artículos sobre ${tema}`,
+                    items: ['<strong>Catálogo en línea:</strong> 5 revistas', '<strong>Recursos de investigación:</strong> 5 bases de datos', '<strong>Repositorio:</strong> 9 tesis y artículos']
+                }]);
+            }, 600);
+        }
+
+        function handleArticulosSinTema() {
+            setTimeout(() => {
+                addBotMessage('Con gusto te ayudo a buscar artículos. ¿De qué tema o de qué curso los necesitas?');
+                addActionButtons([
+                    { html: '🎤 Hablar', onClick: () => toggleVoiceRecognition() },
+                    { html: '✏️ Escribir', onClick: () => document.getElementById('chat-input').focus() }
+                ]);
+            }, 600);
+        }
+
+        function handleTesis(tema, conResultados) {
+            setTimeout(() => {
+                const response = `
+                    Claro. Para tesis sobre <strong>${tema}</strong>, mira en este orden:
+                    <ol>
+                        <li><strong>e-Bibliografía:</strong> 1 recurso(s) que tu profesor recomendó en el sílabo. <a href="https://biblioteca.upc.edu.pe/az.php" target="_blank">[Ir a la e-Bibliografía]</a></li>
+                        <li><strong>Catálogo en línea:</strong> tesis impresas y electrónicas de la biblioteca. <a href="https://catalogo.upc.edu.pe/discovery/search?vid=51UPC_INST:51UPC_INST" target="_blank">[Ver en el catálogo]</a></li>
+                        <li><strong>Recursos de investigación:</strong> bases de datos con tesis y trabajos de investigación. <a href="https://biblioteca.upc.edu.pe/az.php" target="_blank">[Abrir]</a></li>
+                        <li><strong>Repositorio:</strong> las tesis de tu universidad, aquí está lo más importante para este tema. <a href="https://repositorioacademico.upc.edu.pe/home" target="_blank">[Abrir]</a></li>
+                        <li><strong>Como complemento:</strong> tesis de acceso abierto de fuentes confiables. <a href="https://biblioteca.upc.edu.pe/az.php" target="_blank">[Abrir]</a></li>
+                    </ol>
+                    Si buscas tesis de tu universidad, empieza por el 4. ¿Quieres que te sugiera palabras clave?
+                `;
+                addBotMessage(response, true);
+                addActionButtons([
+                    { html: '<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg> Escuchar', onClick: () => speakMessage(`Encontré tesis sobre ${tema}`) },
+                    { html: '📝 Mostrar tesis', onClick: () => handleSuggestion('Mostrar tesis') },
+                    { html: '💡 Sugerir palabras clave', onClick: () => handleSuggestion('Sugerir palabras clave') }
+                ]);
+                
+                updateRecursosCard([{
+                    title: `Tesis sobre ${tema}`,
+                    items: ['<strong>Catálogo en línea:</strong> 3 tesis', '<strong>Recursos de investigación:</strong> 2 bases de datos', '<strong>Repositorio:</strong> 5 tesis']
+                }]);
+            }, 600);
+        }
+
+        function handleTesisSinTema() {
+            setTimeout(() => {
+                addBotMessage('Con gusto te ayudo a buscar tesis. ¿De qué tema o de qué carrera las necesitas?');
+                addActionButtons([
+                    { html: '🎤 Hablar', onClick: () => toggleVoiceRecognition() },
+                    { html: '✏️ Escribir', onClick: () => document.getElementById('chat-input').focus() }
+                ]);
+            }, 600);
+        }
+
+        function handleBaseDatos(tema) {
+            setTimeout(() => {
+                const response = `
+                    <strong>Es más fácil de lo que parece:</strong>
+                    <ol type="a">
+                        <li>Elige la base de datos. Si no sabes cuál, te recomiendo una según tu tema${tema ? ' (' + tema + ')' : ''}.</li>
+                        <li>Escribe tu tema con palabras sencillas.</li>
+                        <li>Filtra por año, tipo de documento y texto completo.</li>
+                        <li>Lee el título y el resumen antes de abrir el artículo.</li>
+                        <li>Guarda o copia la referencia de lo que te sirva.</li>
+                    </ol>
+                    Conmigo no necesitas comillas ni operadores, pero en la base de datos sí ayudan. Si quieres, te preparo la búsqueda lista para copiar y pegar. ¿Cuál es tu tema?
+                `;
+                addBotMessage(response, true);
+                addActionButtons([
+                    { html: '<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg> Escuchar', onClick: () => speakMessage('Te explico cómo buscar en una base de datos') },
+                    { html: '🔧 Preparar mi búsqueda', onClick: () => handleSuggestion('Preparar búsqueda') }
+                ]);
+            }, 600);
+        }
+
+        function handleCitar() {
+            setTimeout(() => {
+                const response = `
+                    <strong>Dime dos cosas y te ayudo:</strong>
+                    <ul>
+                        <li><strong>El tipo de fuente:</strong> libro, artículo, tesis o página web.</li>
+                        <li><strong>La norma que pide tu curso,</strong> por ejemplo APA.</li>
+                    </ul>
+                    Te muestro el formato con un ejemplo y puedo armar tu referencia con los datos de la fuente. Si no sabes qué norma usar, confírmalo con tu profesor.
+                `;
+                addBotMessage(response, true);
+                addActionButtons([
+                    { html: '<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg> Escuchar', onClick: () => speakMessage('Para citar, necesito saber el tipo de fuente y la norma') }
+                ]);
+                addSuggestions(['Libro', 'Artículo', 'Tesis', 'Página web']);
+            }, 600);
+        }
+
+        function handleTipoNoClaro(tema) {
+            setTimeout(() => {
+                const response = `
+                    Puedo ayudarte con eso. Para <strong>${tema}</strong>, ¿qué prefieres que busque?
+                    <ul>
+                        <li>📖 Libros</li>
+                        <li>📄 Artículos académicos</li>
+                        <li>📝 Tesis</li>
+                        <li>🔍 Todo lo que encuentre</li>
+                    </ul>
+                `;
+                addBotMessage(response, true);
+                addSuggestions(['Libros', 'Artículos', 'Tesis', 'Todo']);
+            }, 600);
+        }
+
+        function handleOtra() {
+            setTimeout(() => {
+                addBotMessage('Puedo ayudarte con:<br><br>• 📋 Tareas pendientes<br>• 🔍 Dónde buscar información<br>• 📚 Recursos del sílabo<br>• 📖 Libros y artículos<br>• 📝 Tesis<br>• 💻 Bases de datos<br>• 📝 Cómo citar<br><br>Elige una opción del menú o escribe tu consulta.');
+                addSuggestions([
+                    '¿Qué tareas tengo pendientes?',
+                    '¿Dónde busco información?',
+                    'Recursos del sílabo'
+                ]);
+            }, 600);
+        }
+
+        function updateEntregablesCard(tasks) {
+            const countEl = document.getElementById('entregables-count');
+            const listEl = document.getElementById('entregables-list');
+            
+            if (!countEl || !listEl) return;
+            
+            countEl.textContent = `${tasks.length} pendientes`;
+            listEl.innerHTML = '';
+            
+            tasks.forEach((task, index) => {
+                const taskDiv = document.createElement('div');
+                taskDiv.className = 'task-item';
+                taskDiv.innerHTML = `
+                    <div class="task-number">${index + 1}</div>
+                    <div class="task-info">
+                        <div class="task-item-title">${task.title}</div>
+                        <div class="task-item-date">${task.date}</div>
+                    </div>
+                `;
+                listEl.appendChild(taskDiv);
+            });
+        }
+
+        function updateBibliografiaCard(resources) {
+            const titleEl = document.getElementById('bibliografia-title');
+            const listEl = document.getElementById('bibliografia-list');
+            
+            if (!titleEl || !listEl) return;
+            
+            titleEl.textContent = 'Recursos para cada tarea';
+            listEl.innerHTML = '';
+            
+            resources.forEach((resource, index) => {
+                const resourceDiv = document.createElement('div');
+                resourceDiv.className = 'resource-item';
+                
+                let metaHtml = '';
+                resource.items.forEach(item => {
+                    metaHtml += `<div class="resource-item-meta">${item}</div>`;
+                });
+                
+                resourceDiv.innerHTML = `
+                    <div class="resource-item-header">
+                        <div class="task-number">${index + 1}</div>
+                        <div class="resource-item-title">${resource.title}</div>
+                    </div>
+                    ${metaHtml}
+                `;
+                listEl.appendChild(resourceDiv);
+            });
+        }
+
+        function updateRecursosCard(resources) {
+            const titleEl = document.getElementById('recursos-title');
+            const listEl = document.getElementById('recursos-list');
+            
+            if (!titleEl || !listEl) return;
+            
+            titleEl.textContent = 'Recursos para cada tarea';
+            listEl.innerHTML = '';
+            
+            resources.forEach((resource, index) => {
+                const resourceDiv = document.createElement('div');
+                resourceDiv.className = 'resource-item';
+                
+                let countHtml = '';
+                resource.items.forEach(item => {
+                    countHtml += `<div class="resource-item-count">${item}</div>`;
+                });
+                
+                resourceDiv.innerHTML = `
+                    <div class="resource-item-header">
+                        <div class="task-number">${index + 1}</div>
+                        <div class="resource-item-title">${resource.title}</div>
+                    </div>
+                    ${countHtml}
+                `;
+                listEl.appendChild(resourceDiv);
+            });
+        }
+
+        function speakMessage(text) {
+            if (voiceEnabled && 'speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'es-ES';
+                speechSynthesis.speak(utterance);
+            }
+        }
+
+        document.getElementById('chat-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.altKey && e.key === 'b') {
+                e.preventDefault();
+                toggleChat();
+            }
+        });
+    </script>
+
+</body>
+</html>
